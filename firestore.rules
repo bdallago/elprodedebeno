@@ -119,18 +119,18 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       
       // Create: User can create their own prediction.
-      allow create: if isAuthenticated() && isOwner(userId) &&
-                    hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
-                    isValidPrediction(request.resource.data) &&
-                    request.resource.data.uid == userId;
-                    
-      // Update: User can update their own prediction IF it's not locked. Admin can update anything.
-      allow update: if isAuthenticated() && isOwner(userId) &&
-                    hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
-                    isValidPrediction(request.resource.data) &&
-                    request.resource.data.uid == resource.data.uid &&
-                    (resource.data.isLocked == false || isAdmin());
-                    
+      allow update: if isAuthenticated() && (
+                      (isOwner(userId) &&
+                       hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                       isValidPrediction(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid &&
+                       resource.data.isLocked == false)
+                      ||
+                      (isAdmin() &&
+                       hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                       isValidPrediction(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid)
+                    );  
       // Delete: Only admins can delete predictions
       allow delete: if isAdmin();
     }
