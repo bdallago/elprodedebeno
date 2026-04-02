@@ -14,7 +14,7 @@ const TEAM_CODES: Record<string, string> = {
   "Bélgica": "be", "Egipto": "eg", "Irán": "ir", "Nueva Zelanda": "nz",
   "España": "es", "Cabo Verde": "cv", "Arabia Saudita": "sa", "Uruguay": "uy",
   "Francia": "fr", "Senegal": "sn", "Irak": "iq", "Noruega": "no",
-  "Argentina": "ar", "Algeria": "dz", "Austria": "at", "Jordania": "jo",
+  "Argentina": "ar", "Argelia": "dz", "Austria": "at", "Jordania": "jo",
   "Portugal": "pt", "República Democrática del Congo": "cd", "Uzbekistán": "uz", "Colombia": "co",
   "Inglaterra": "gb-eng", "Croacia": "hr", "Ghana": "gh", "Panamá": "pa",
 };
