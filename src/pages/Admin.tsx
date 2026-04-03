@@ -42,7 +42,15 @@ export default function Admin() {
   
   // State for reports
   const [reports, setReports] = useState<Report[]>([]);
-  const [activeTab, setActiveTab] = useState<'results' | 'users' | 'reports'>('results');
+  const [activeTab, setActiveTab] = useState<'results' | 'users' | 'reports' | 'analytics'>('results');
+
+  // Analytics state
+  const [analytics, setAnalytics] = useState({
+    totalUsers: 0,
+    totalPredictions: 0,
+    usersWithPredictions: 0,
+    activeToday: 0
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,8 +82,28 @@ export default function Admin() {
 
         // Fetch users
         const usersSnap = await getDocs(collection(db, "users"));
-        const usersData = usersSnap.docs.map(d => ({ ...d.data(), uid: d.id } as UserProfile));
+        const usersData = usersSnap.docs.map(d => ({ ...d.data(), uid: d.id } as any));
         setUsers(usersData);
+        
+        // Fetch predictions to calculate analytics
+        const predictionsSnap = await getDocs(collection(db, "predictions"));
+        
+        // Calculate analytics
+        const today = new Date().toISOString().split('T')[0];
+        let activeTodayCount = 0;
+        
+        usersData.forEach(u => {
+          if (u.lastLogin && u.lastLogin.startsWith(today)) {
+            activeTodayCount++;
+          }
+        });
+
+        setAnalytics({
+          totalUsers: usersData.length,
+          totalPredictions: predictionsSnap.size,
+          usersWithPredictions: predictionsSnap.size, // Assuming 1 prediction doc per user
+          activeToday: activeTodayCount
+        });
         
         // Fetch reports
         const reportsQuery = query(collection(db, "reports"), orderBy("createdAt", "desc"));
@@ -370,6 +398,13 @@ export default function Admin() {
           >
             Reportes
           </Button>
+          <Button 
+            variant={activeTab === 'analytics' ? 'default' : 'outline'} 
+            onClick={() => setActiveTab('analytics')}
+            className={activeTab === 'analytics' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+          >
+            Estadísticas
+          </Button>
         </div>
       </div>
 
@@ -377,6 +412,69 @@ export default function Admin() {
         <div className={`p-4 rounded-md flex items-center gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
           {message.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
           {message.text}
+        </div>
+      )}
+
+      {activeTab === 'analytics' && (
+        <div className="space-y-6 pt-4 pb-12">
+          <h2 className="text-2xl font-bold text-indigo-700 border-b border-indigo-200 pb-2 flex items-center gap-2">
+            <Calculator className="w-6 h-6" /> Estadísticas del Sitio
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">Resumen rápido de la actividad en El Prode de Beno.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">Usuarios Registrados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">{analytics.totalUsers}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">Usuarios Activos Hoy</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-blue-600">{analytics.activeToday}</div>
+                <p className="text-xs text-gray-500 mt-1">Iniciaron sesión hoy</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">Predicciones Guardadas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-green-600">{analytics.totalPredictions}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">Tasa de Participación</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-purple-600">
+                  {analytics.totalUsers > 0 ? Math.round((analytics.usersWithPredictions / analytics.totalUsers) * 100) : 0}%
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Usuarios con predicciones</p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg mt-6">
+            <h3 className="font-semibold text-blue-900 mb-2">Analíticas Avanzadas (Vercel)</h3>
+            <p className="text-sm text-blue-800 mb-4">
+              Para ver datos de tráfico detallados (visitas por página, tiempo en el sitio, países de origen, etc.), ingresá a tu panel de Vercel.
+            </p>
+            <a 
+              href="https://vercel.com/dashboard" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-10 px-4 py-2"
+            >
+              Abrir Vercel Analytics
+            </a>
+          </div>
         </div>
       )}
 

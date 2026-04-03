@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { Analytics } from "@vercel/analytics/react";
 
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
@@ -11,6 +12,8 @@ import Leagues from "./pages/Leagues";
 import Predictions from "./pages/Predictions";
 import Admin from "./pages/Admin";
 import Instructions from "./pages/Instructions";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Navbar from "./components/Navbar";
 import { Fixture } from "./components/Fixture";
 import ScrollToTop from "./components/ScrollToTop";
@@ -59,15 +62,18 @@ export default function App() {
             email: currentUser.email,
             photoURL: currentUser.photoURL || "",
             role: role,
-            totalPoints: 0
+            totalPoints: 0,
+            lastLogin: new Date().toISOString()
           });
           setIsAdmin(isAdminEmail);
         } else {
           const currentRole = userSnap.data().role;
+          const updates: any = { lastLogin: new Date().toISOString() };
           if (isAdminEmail && currentRole !== "admin") {
             // Force upgrade to admin if the email matches but role is player
-            await setDoc(userRef, { role: "admin" }, { merge: true });
+            updates.role = "admin";
           }
+          await setDoc(userRef, updates, { merge: true });
           setIsAdmin(isAdminEmail || currentRole === "admin");
         }
       } else {
@@ -98,6 +104,8 @@ export default function App() {
             <Route path="/predictions" element={user ? <Predictions user={user} /> : <Navigate to="/login" />} />
             <Route path="/instructions" element={user ? <Instructions /> : <Navigate to="/login" />} />
             <Route path="/admin" element={user && isAdmin ? <Admin /> : <Navigate to="/" />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
           </Routes>
           
           {/* Fixture at the bottom of all pages when logged in */}
@@ -111,24 +119,33 @@ export default function App() {
         {/* Footer */}
         {user && (
           <footer className="w-full bg-gradient-to-r from-blue-900 to-indigo-900 text-white mt-auto">
-            <a 
-              href="https://x.com/imbenodl" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="block w-full py-8 text-center hover:bg-blue-800/50 transition-all duration-300 md:hover:shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.3)]"
-            >
-              <div className="space-y-2">
-                <p className="text-lg font-semibold tracking-wide">
-                  El Prode de Beno
-                </p>
-                <p className="text-blue-200 text-sm">
-                  desarrollado por <span className="text-white font-bold">@imbenodl</span>
-                </p>
+            <div className="container mx-auto px-4 py-8">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <a 
+                  href="https://x.com/imbenodl" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-blue-200 transition-colors"
+                >
+                  <div className="space-y-1 text-center md:text-left">
+                    <p className="text-lg font-semibold tracking-wide">
+                      El Prode de Beno
+                    </p>
+                    <p className="text-blue-200 text-sm">
+                      desarrollado por <span className="text-white font-bold">@imbenodl</span>
+                    </p>
+                  </div>
+                </a>
+                <div className="flex gap-6 text-sm text-blue-200">
+                  <Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidad</Link>
+                  <Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link>
+                </div>
               </div>
-            </a>
+            </div>
           </footer>
         )}
       </div>
+      <Analytics />
     </BrowserRouter>
   );
 }

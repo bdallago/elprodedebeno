@@ -63,6 +63,7 @@ service cloud.firestore {
              data.displayName is string && data.displayName.size() > 0 && data.displayName.size() < 100 &&
              data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
              (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 2000)) &&
+             (!('lastLogin' in data) || data.lastLogin is string) &&
              data.role in ['admin', 'player'] &&
              data.totalPoints is number && data.totalPoints >= 0;
     }
@@ -90,7 +91,7 @@ service cloud.firestore {
       
       // Create: User can create their own profile. Role must be 'player' unless they are an admin.
       allow create: if isAuthenticated() && isOwner(userId) &&
-                    hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints']) &&
+                    hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin']) &&
                     isValidUser(request.resource.data) &&
                     request.resource.data.uid == userId &&
                     ((request.resource.data.role == 'player' && request.resource.data.totalPoints == 0) || isAdmin());
@@ -98,14 +99,14 @@ service cloud.firestore {
       // Update: User can update their own profile (cannot change role/points). Admin can update any profile.
       allow update: if isAuthenticated() && (
                       (isOwner(userId) &&
-                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints']) &&
+                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin']) &&
                        isValidUser(request.resource.data) &&
                        request.resource.data.uid == resource.data.uid &&
                        request.resource.data.role == resource.data.role &&
                        request.resource.data.totalPoints == resource.data.totalPoints)
                       ||
                       (isAdmin() &&
-                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints']) &&
+                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin']) &&
                        isValidUser(request.resource.data) &&
                        request.resource.data.uid == resource.data.uid)
                     );
@@ -119,6 +120,12 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       
       // Create: User can create their own prediction.
+      allow create: if isAuthenticated() && isOwner(userId) &&
+                    hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                    isValidPrediction(request.resource.data) &&
+                    request.resource.data.uid == userId;
+                    
+      // Update: User can update their own prediction IF it's not locked. Admin can update anything.
       allow update: if isAuthenticated() && (
                       (isOwner(userId) &&
                        hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
@@ -130,7 +137,8 @@ service cloud.firestore {
                        hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
                        isValidPrediction(request.resource.data) &&
                        request.resource.data.uid == resource.data.uid)
-                    );  
+                    );
+                    
       // Delete: Only admins can delete predictions
       allow delete: if isAdmin();
     }
