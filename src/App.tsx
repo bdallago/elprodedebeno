@@ -4,6 +4,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
@@ -146,6 +147,7 @@ export default function App() {
         )}
       </div>
       <Analytics />
+      <SpeedInsights />
     </BrowserRouter>
   );
 }
