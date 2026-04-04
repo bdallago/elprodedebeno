@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Trophy, Medal, User as UserIcon } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
 import { UserPredictionsModal } from "../components/UserPredictionsModal";
+import { useTranslation } from 'react-i18next';
 
 interface Player {
   uid: string;
@@ -19,6 +20,7 @@ export default function Dashboard({ user }: { user: User }) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<{uid: string, name: string} | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const q = query(collection(db, "users"), orderBy("totalPoints", "desc"));
@@ -40,7 +42,7 @@ export default function Dashboard({ user }: { user: User }) {
   const myRank = players.findIndex((p) => p.totalPoints === myPoints) + 1;
 
   if (loading) {
-    return <div className="text-center py-10">Cargando clasificación...</div>;
+    return <div className="text-center py-10">{t('dashboard.loading')}</div>;
   }
 
   const renderLeaderboard = (title: string, playersList: Player[]) => (
@@ -88,7 +90,7 @@ export default function Dashboard({ user }: { user: User }) {
               </div>
               
               <div className="text-xl font-bold text-gray-900">
-                {player.totalPoints} <span className="text-sm font-normal text-gray-500">pts</span>
+                {player.totalPoints} <span className="text-sm font-normal text-gray-500">{t('dashboard.pts')}</span>
               </div>
             </div>
           )})}
@@ -111,7 +113,7 @@ export default function Dashboard({ user }: { user: User }) {
         <Card className="bg-gradient-to-br from-blue-600 to-blue-800 text-white border-none">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-blue-200 font-medium mb-1">Mis Puntos</p>
+              <p className="text-blue-200 font-medium mb-1">{t('dashboard.points')}</p>
               <h2 className="text-5xl font-bold">{myPoints}</h2>
               <p className="text-xs text-blue-200 mt-2 opacity-80">Los puntos se calculan automáticamente según tus aciertos.</p>
             </div>
@@ -124,7 +126,7 @@ export default function Dashboard({ user }: { user: User }) {
         <Card className="bg-gradient-to-br from-indigo-600 to-purple-800 text-white border-none">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-indigo-200 font-medium mb-1">Mi Posición Global</p>
+              <p className="text-indigo-200 font-medium mb-1">{t('dashboard.globalRank')}</p>
               <h2 className="text-5xl font-bold">#{myRank || "-"}</h2>
             </div>
             <div className="bg-white/20 p-4 rounded-full">
@@ -135,9 +137,9 @@ export default function Dashboard({ user }: { user: User }) {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900">Ranking Global</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.globalLeaderboard')}</h2>
         <p className="text-sm text-gray-500">Competí contra todos los usuarios registrados en el prode. Acá vas a ver la posición de cada jugador a nivel mundial.</p>
-        {renderLeaderboard("Tabla de Posiciones Global", players)}
+        {renderLeaderboard(t('dashboard.globalLeaderboard'), players)}
       </div>
 
       {selectedUser && (

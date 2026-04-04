@@ -11,9 +11,12 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { Save, Lock, AlertCircle, CheckCircle2 } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
 
+import { useTranslation } from 'react-i18next';
+
 const DEADLINE = new Date('2026-06-08T00:00:00').getTime();
 
 export default function Predictions({ user }: { user: User }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
@@ -141,10 +144,10 @@ export default function Predictions({ user }: { user: User }) {
         setIsLocked(true);
       }
       
-      setMessage({ type: 'success', text: lock ? 'Predicciones guardadas y fijadas con éxito.' : 'Predicciones guardadas con éxito.' });
+      setMessage({ type: 'success', text: lock ? t('predictions.lockSuccess') : t('predictions.saveSuccess') });
     } catch (error) {
       console.error("Error saving predictions:", error);
-      setMessage({ type: 'error', text: 'Hubo un error al guardar. Intenta de nuevo.' });
+      setMessage({ type: 'error', text: t('predictions.saveError') });
     } finally {
       setSaving(false);
       setTimeout(() => setMessage(null), 5000);
@@ -152,7 +155,7 @@ export default function Predictions({ user }: { user: User }) {
   };
 
   if (loading) {
-    return <div className="text-center py-10">Cargando tus predicciones...</div>;
+    return <div className="text-center py-10">{t('predictions.loading')}</div>;
   }
 
   return (
@@ -161,11 +164,11 @@ export default function Predictions({ user }: { user: User }) {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <div className="w-full md:w-auto flex-1">
-          <h1 className="text-3xl font-bold text-gray-900 text-center md:text-left">Mis Predicciones</h1>
+          <h1 className="text-3xl font-bold text-gray-900 text-center md:text-left">{t('predictions.title')}</h1>
           <p className="text-gray-500 mt-2 text-justify md:text-left">
             {effectiveIsLocked 
-              ? "Tus predicciones están fijadas y no pueden ser modificadas." 
-              : "Podés 'Guardar Borrador' cuantas veces quieras. Las elecciones solo se van a fijar permanentemente al hacer clic en 'Fijar Predicciones' (esta acción se puede hacer solo una vez)."}
+              ? t('predictions.lockedDesc') 
+              : t('predictions.unlockedDesc')}
           </p>
         </div>
         
@@ -178,20 +181,20 @@ export default function Predictions({ user }: { user: User }) {
                 disabled={saving}
                 className="w-full sm:w-auto flex items-center justify-center gap-2"
               >
-                <Save className="w-4 h-4" /> {saving ? "Guardando..." : "Guardar Borrador"}
+                <Save className="w-4 h-4" /> {saving ? t('predictions.saving') : t('predictions.saveDraft')}
               </Button>
               <Button 
                 onClick={() => setConfirmLock(true)}
                 disabled={saving}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700"
               >
-                <Lock className="w-4 h-4" /> Fijar Predicciones
+                <Lock className="w-4 h-4" /> {t('predictions.lockPredictions')}
               </Button>
             </>
           )}
           {effectiveIsLocked && (
             <div className="flex items-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-md border border-green-200 w-full justify-center">
-              <Lock className="w-4 h-4" /> Predicciones Fijadas
+              <Lock className="w-4 h-4" /> {t('predictions.predictionsLocked')}
             </div>
           )}
         </div>
@@ -205,8 +208,8 @@ export default function Predictions({ user }: { user: User }) {
       )}
 
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Fase de Grupos</h2>
-        <p className="text-sm text-gray-600 mb-4 text-justify">Arrastrá los equipos para ordenarlos del 1º al 4º puesto. Los dos primeros y los 8 mejores terceros avanzan a 16avos.</p>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t('predictions.groupStage')}</h2>
+        <p className="text-sm text-gray-600 mb-4 text-justify">{t('predictions.groupStageDesc')}</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Object.entries(groupPredictions)
@@ -214,7 +217,7 @@ export default function Predictions({ user }: { user: User }) {
             .map(([groupLetter, teams]) => (
             <Card key={groupLetter} className="overflow-hidden border-t-4 border-t-blue-600">
               <CardHeader className="bg-gray-50 py-3 px-4 border-b">
-                <CardTitle className="text-lg">Grupo {groupLetter}</CardTitle>
+                <CardTitle className="text-lg">{t('predictions.group')} {groupLetter}</CardTitle>
               </CardHeader>
               <CardContent className="p-4">
                 <DndContext 
@@ -238,8 +241,8 @@ export default function Predictions({ user }: { user: User }) {
       </div>
 
       <div className="space-y-6 pt-8">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Preguntas Especiales</h2>
-        <p className="text-sm text-gray-600 mb-4 text-justify">Por favor, escribí el nombre completo del jugador o selección elegida para evitar confusiones en la corrección.</p>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t('predictions.specialQuestions')}</h2>
+        <p className="text-sm text-gray-600 mb-4 text-justify">{t('predictions.specialQuestionsDesc')}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SPECIAL_QUESTIONS.map((q) => (
             <Card key={q.id}>
@@ -250,7 +253,7 @@ export default function Predictions({ user }: { user: User }) {
                 <input
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
-                  placeholder="Escribí tu respuesta..."
+                  placeholder={t('predictions.typeAnswer')}
                   value={specialPredictions[q.id] || ""}
                   onChange={(e) => handleSpecialChange(q.id, e.target.value)}
                   disabled={effectiveIsLocked}
@@ -261,25 +264,25 @@ export default function Predictions({ user }: { user: User }) {
         </div>
         
         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center mt-6 shadow-sm">
-          <p className="text-blue-800 font-bold">¿TENÉS IDEAS O SUGERENCIAS DE NUEVAS PREGUNTAS ESPECIALES? ¡NO DUDES EN MANDARLAS!</p>
+          <p className="text-blue-800 font-bold">{t('predictions.suggestions')}</p>
         </div>
       </div>
 
       <div className="space-y-6 pt-8 pb-12 opacity-50">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Fase Eliminatoria</h2>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t('predictions.knockoutStage')}</h2>
         <div className="bg-gray-100 p-8 rounded-lg text-center border-2 border-dashed border-gray-300">
-          <p className="text-gray-600 font-medium">Cuadro por definir</p>
-          <p className="text-sm text-gray-500 mt-2">Esta sección se habilitará una vez finalizada la fase de grupos.</p>
+          <p className="text-gray-600 font-medium">{t('predictions.tbd')}</p>
+          <p className="text-sm text-gray-500 mt-2">{t('predictions.knockoutDesc')}</p>
         </div>
       </div>
 
       {confirmLock && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">¿Fijar predicciones?</h3>
-            <p className="text-gray-600 mb-6">Una vez fijadas, no vas a poder modificarlas. ¿Estás seguro de que querés continuar?</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('predictions.confirmLockTitle')}</h3>
+            <p className="text-gray-600 mb-6">{t('predictions.confirmLockDesc')}</p>
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setConfirmLock(false)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setConfirmLock(false)}>{t('predictions.cancel')}</Button>
               <Button 
                 className="bg-green-600 hover:bg-green-700 text-white" 
                 onClick={() => { 
@@ -288,7 +291,7 @@ export default function Predictions({ user }: { user: User }) {
                 }}
                 disabled={saving}
               >
-                {saving ? "Fijando..." : "Sí, fijar"}
+                {saving ? t('predictions.locking') : t('predictions.yesLock')}
               </Button>
             </div>
           </div>

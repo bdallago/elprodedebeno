@@ -8,6 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "../firebase";
 import { WorldCupBanner } from "../components/WorldCupBanner";
 import { CountdownBanner } from "../components/CountdownBanner";
+import { useTranslation } from 'react-i18next';
 
 export default function Welcome() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -16,6 +17,7 @@ export default function Welcome() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -45,7 +47,7 @@ export default function Welcome() {
           // Timeout to prevent hanging
           const uploadPromise = uploadBytes(fileRef, file);
           const timeoutPromise = new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error("Firebase Storage bloqueó la subida. Por favor, revisá las reglas de seguridad en tu consola de Firebase.")), 15000)
+            setTimeout(() => reject(new Error(t('welcome.storageError'))), 15000)
           );
           
           await Promise.race([uploadPromise, timeoutPromise]);
@@ -72,7 +74,7 @@ export default function Welcome() {
       }, 3000);
     } catch (error: any) {
       console.error("Error al guardar reporte:", error);
-      setSubmitError(error.message || "Hubo un error al enviar el reporte. Verificá tu conexión y volvé a intentar.");
+      setSubmitError(error.message || t('welcome.generalError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -85,10 +87,10 @@ export default function Welcome() {
       <div className="flex flex-col items-center justify-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
         <div className="w-full">
           <h1 className="text-4xl font-bold text-gray-900">
-            Bienvenido a<br />"El Prode de Beno"
+            {t('welcome.title')}<br />"{t('welcome.appTitle')}"
           </h1>
           <p className="text-gray-500 mt-4 text-lg text-justify">
-            Demostrá tus conocimientos futbolísticos, competí con amigos y convertite en el campeón de los pronósticos.
+            {t('welcome.subtitle')}
           </p>
         </div>
       </div>
@@ -97,15 +99,15 @@ export default function Welcome() {
         <Card className="hover:shadow-md transition-shadow border-t-4 border-t-blue-500">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center gap-2 text-blue-900">
-              <BookOpen className="w-5 h-5" /> Instrucciones
+              <BookOpen className="w-5 h-5" /> {t('welcome.instructionsTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-gray-600">
             <p className="mb-4">
-              Antes de empezar, te recomendamos leer las reglas del juego. Acá vas a encontrar cómo funciona el sistema de puntuación y qué necesitás para ganar.
+              {t('welcome.instructionsDesc')}
             </p>
             <Link to="/instructions">
-              <Button variant="outline" className="w-full">Leer las reglas</Button>
+              <Button variant="outline" className="w-full">{t('welcome.readRules')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -113,15 +115,15 @@ export default function Welcome() {
         <Card className="hover:shadow-md transition-shadow border-t-4 border-t-green-500">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center gap-2 text-green-900">
-              <PenSquare className="w-5 h-5" /> Mis Predicciones
+              <PenSquare className="w-5 h-5" /> {t('welcome.predictionsTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-gray-600">
             <p className="mb-4">
-              El corazón del juego. Acá vas a tener que pronosticar las posiciones de la fase de grupos y responder a las preguntas especiales del torneo.
+              {t('welcome.predictionsDesc')}
             </p>
             <Link to="/predictions">
-              <Button variant="outline" className="w-full">Hacer mis predicciones</Button>
+              <Button variant="outline" className="w-full">{t('welcome.makePredictions')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -129,15 +131,15 @@ export default function Welcome() {
         <Card className="hover:shadow-md transition-shadow border-t-4 border-t-purple-500">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center gap-2 text-purple-900">
-              <Users className="w-5 h-5" /> Torneos
+              <Users className="w-5 h-5" /> {t('welcome.leaguesTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-gray-600">
             <p className="mb-4">
-              Creá torneos privados para competir exclusivamente con tus amigos, familiares o compañeros de trabajo, o sumate a torneos públicos.
+              {t('welcome.leaguesDesc')}
             </p>
             <Link to="/leagues">
-              <Button variant="outline" className="w-full">Ver torneos</Button>
+              <Button variant="outline" className="w-full">{t('welcome.viewLeagues')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -145,15 +147,15 @@ export default function Welcome() {
         <Card className="hover:shadow-md transition-shadow border-t-4 border-t-orange-500">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center gap-2 text-orange-900">
-              <Trophy className="w-5 h-5" /> Ranking
+              <Trophy className="w-5 h-5" /> {t('welcome.rankingTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-gray-600">
             <p className="mb-4">
-              Seguí la tabla de posiciones general en tiempo real. Descubrí quién lidera el ranking global y cómo te ubicás frente al resto.
+              {t('welcome.rankingDesc')}
             </p>
             <Link to="/dashboard">
-              <Button variant="outline" className="w-full">Ver ranking</Button>
+              <Button variant="outline" className="w-full">{t('welcome.viewRanking')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -162,16 +164,15 @@ export default function Welcome() {
       <Card className="hover:shadow-md transition-shadow border-t-4 border-t-red-500 bg-red-50/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl flex items-center gap-2 text-red-900">
-            <MessageSquareWarning className="w-5 h-5" /> Reportar Errores o Sugerencias
+            <MessageSquareWarning className="w-5 h-5" /> {t('welcome.reportTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-gray-700">
           <p className="mb-4">
-            ¿Encontraste algún problema o tenés alguna idea para mejorar la aplicación? ¡Queremos escucharte! 
-            Por favor, sé lo más detallado y preciso posible en tu mensaje. Si tenés imágenes o videos, podés adjuntarlos acá.
+            {t('welcome.reportDesc')}
           </p>
           <Button onClick={() => setIsReportModalOpen(true)} className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white">
-            Enviar Reporte o Sugerencia
+            {t('welcome.reportBtn')}
           </Button>
         </CardContent>
       </Card>
@@ -183,15 +184,15 @@ export default function Welcome() {
             <button onClick={() => setIsReportModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
               <X className="w-6 h-6" />
             </button>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Enviar Reporte o Sugerencia</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('welcome.reportModalTitle')}</h3>
             <p className="text-gray-600 mb-6 text-sm">
-              Por favor, sé lo más detallado y preciso posible. Si tenés capturas de pantalla o videos, podés adjuntarlos acá.
+              {t('welcome.reportModalDesc')}
             </p>
             
             {submitSuccess ? (
               <div className="bg-green-50 text-green-800 p-4 rounded-lg border border-green-200 text-center">
-                <p className="font-bold">¡Reporte enviado con éxito!</p>
-                <p className="text-sm mt-1">Beno lo va a revisar a la brevedad.</p>
+                <p className="font-bold">{t('welcome.reportSuccess')}</p>
+                <p className="text-sm mt-1">{t('welcome.reportSuccessDesc')}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmitReport} className="space-y-4">
@@ -201,18 +202,18 @@ export default function Welcome() {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tu mensaje</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('welcome.yourMessage')}</label>
                   <textarea 
                     required
                     rows={5}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                    placeholder="Describí el error o tu sugerencia acá..."
+                    placeholder={t('welcome.placeholder')}
                     value={reportText}
                     onChange={(e) => setReportText(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Adjuntar archivos (Opcional)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('welcome.attachFiles')}</label>
                   <input 
                     type="file" 
                     multiple 
@@ -220,7 +221,7 @@ export default function Welcome() {
                     onChange={handleFileSelect}
                     className="w-full p-2 border border-gray-300 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
-                  <p className="text-xs text-gray-500 mt-1 mb-3">Formatos permitidos: Cualquier formato de imagen o video.</p>
+                  <p className="text-xs text-gray-500 mt-1 mb-3">{t('welcome.allowedFormats')}</p>
                   
                   {reportFiles.length > 0 && (
                     <div className="space-y-2 mt-3 max-h-40 overflow-y-auto pr-2">
@@ -241,7 +242,7 @@ export default function Welcome() {
                             type="button" 
                             onClick={() => removeFile(index)}
                             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
-                            title="Eliminar archivo"
+                            title={t('welcome.deleteFile')}
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -253,7 +254,7 @@ export default function Welcome() {
                 
                 <div className="pt-2">
                   <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg">
-                    {isSubmitting ? 'Enviando...' : 'Enviar a Beno'}
+                    {isSubmitting ? t('welcome.submitting') : t('welcome.submit')}
                   </Button>
                 </div>
               </form>
@@ -261,7 +262,7 @@ export default function Welcome() {
             
             <div className="mt-6 pt-4 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-500">
-                O si preferís, escribime directamente a:<br/>
+                {t('welcome.orEmail')}<br/>
                 <a href="mailto:bdallago01@gmail.com" className="text-blue-600 font-medium hover:underline">bdallago01@gmail.com</a>
               </p>
             </div>

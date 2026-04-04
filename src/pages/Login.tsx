@@ -3,9 +3,11 @@ import { auth, googleProvider } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Trophy } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogin = async () => {
     try {
@@ -16,7 +18,7 @@ export default function Login() {
       navigate(targetPath + search + hash);
     } catch (error) {
       console.error("Error signing in with Google", error);
-      alert("Hubo un error al iniciar sesión. Por favor intenta de nuevo.");
+      alert(t('login.error'));
     }
   };
 
@@ -28,9 +30,9 @@ export default function Login() {
             <Trophy className="h-12 w-12 text-blue-600" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Prode Mundial 2026</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('login.title')}</h1>
         <p className="text-gray-500 mb-8">
-          Participa, haz tus predicciones y compite con tus amigos para ver quién sabe más de fútbol.
+          {t('login.subtitle')}
         </p>
         
         <Button onClick={handleLogin} className="w-full flex items-center justify-center gap-2 h-12 text-lg">
@@ -52,7 +54,7 @@ export default function Login() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Iniciar sesión con Google
+          {t('login.button')}
         </Button>
       </div>
     </div>

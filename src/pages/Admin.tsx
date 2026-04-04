@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Save, Calculator, AlertCircle, CheckCircle2, Trash2, Users, MessageSquareWarning, Paperclip, Unlock } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
+import { useTranslation } from 'react-i18next';
 
 interface UserProfile {
   uid: string;
@@ -26,6 +27,7 @@ interface Report {
 }
 
 export default function Admin() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [calculating, setCalculating] = useState(false);
@@ -146,10 +148,10 @@ export default function Admin() {
         updatedAt: new Date().toISOString()
       }, { merge: true });
       
-      setMessage({ type: 'success', text: 'Resultados oficiales guardados con éxito.' });
+      setMessage({ type: 'success', text: t('admin.messages.saveSuccess') });
     } catch (error) {
       console.error("Error saving results:", error);
-      setMessage({ type: 'error', text: 'Hubo un error al guardar los resultados.' });
+      setMessage({ type: 'error', text: t('admin.messages.saveError') });
     } finally {
       setSaving(false);
       setTimeout(() => setMessage(null), 5000);
@@ -165,7 +167,7 @@ export default function Admin() {
       const resultsRef = doc(db, "results", "actual");
       const resultsSnap = await getDoc(resultsRef);
       if (!resultsSnap.exists()) {
-        throw new Error("No hay resultados oficiales guardados. Primero debes hacer clic en 'Guardar Resultados'.");
+        throw new Error(t('admin.messages.noResults'));
       }
       const actualData = resultsSnap.data();
       
@@ -271,12 +273,12 @@ export default function Admin() {
       const usersData = usersSnap.docs.map(d => ({ ...d.data(), uid: d.id } as UserProfile));
       setUsers(usersData);
 
-      setMessage({ type: 'success', text: 'Puntos calculados y actualizados para todos los usuarios.' });
+      setMessage({ type: 'success', text: t('admin.messages.calcSuccess') });
       window.scrollTo(0, 0);
 
     } catch (error: any) {
       console.error("Error calculating points:", error);
-      setMessage({ type: 'error', text: error.message || 'Hubo un error al calcular los puntos.' });
+      setMessage({ type: 'error', text: error.message || t('admin.messages.calcError') });
       window.scrollTo(0, 0);
     } finally {
       setCalculating(false);
@@ -302,11 +304,11 @@ export default function Admin() {
       const usersData = updatedUsersSnap.docs.map(d => ({ ...d.data(), uid: d.id } as UserProfile));
       setUsers(usersData);
 
-      setMessage({ type: 'success', text: 'Todos los puntos han sido reseteados a 0.' });
+      setMessage({ type: 'success', text: t('admin.messages.resetSuccess') });
       window.scrollTo(0, 0);
     } catch (error: any) {
       console.error("Error resetting points:", error);
-      setMessage({ type: 'error', text: 'Hubo un error al resetear los puntos.' });
+      setMessage({ type: 'error', text: t('admin.messages.resetError') });
       window.scrollTo(0, 0);
     } finally {
       setCalculating(false);
@@ -323,10 +325,10 @@ export default function Admin() {
       
       // Update local state
       setUsers(users.filter(u => u.uid !== uid));
-      setMessage({ type: 'success', text: `Usuario ${name} eliminado con éxito.` });
+      setMessage({ type: 'success', text: t('admin.messages.deleteUserSuccess', { name }) });
     } catch (error) {
       console.error("Error deleting user:", error);
-      setMessage({ type: 'error', text: 'Error al eliminar usuario. Verifica los permisos.' });
+      setMessage({ type: 'error', text: t('admin.messages.deleteUserError') });
     } finally {
       setTimeout(() => setMessage(null), 5000);
     }
@@ -336,10 +338,10 @@ export default function Admin() {
     try {
       await deleteDoc(doc(db, "reports", id));
       setReports(reports.filter(r => r.id !== id));
-      setMessage({ type: 'success', text: `Reporte eliminado con éxito.` });
+      setMessage({ type: 'success', text: t('admin.messages.deleteReportSuccess') });
     } catch (error) {
       console.error("Error deleting report:", error);
-      setMessage({ type: 'error', text: 'Error al eliminar reporte.' });
+      setMessage({ type: 'error', text: t('admin.messages.deleteReportError') });
     } finally {
       setTimeout(() => setMessage(null), 5000);
     }
@@ -351,20 +353,20 @@ export default function Admin() {
       const predSnap = await getDoc(predRef);
       if (predSnap.exists()) {
         await setDoc(predRef, { isLocked: false }, { merge: true });
-        setMessage({ type: 'success', text: `Predicciones de ${name} desfijadas con éxito.` });
+        setMessage({ type: 'success', text: t('admin.messages.unfixSuccess', { name }) });
       } else {
-        setMessage({ type: 'error', text: `El usuario ${name} aún no tiene predicciones guardadas.` });
+        setMessage({ type: 'error', text: t('admin.messages.unfixError', { name }) });
       }
     } catch (error) {
       console.error("Error unfixing predictions:", error);
-      setMessage({ type: 'error', text: 'Error al desfijar predicciones.' });
+      setMessage({ type: 'error', text: t('admin.messages.unfixErrorGeneral') });
     } finally {
       setTimeout(() => setMessage(null), 5000);
     }
   };
 
   if (loading) {
-    return <div className="text-center py-10">Cargando panel de administración...</div>;
+    return <div className="text-center py-10">{t('admin.loading')}</div>;
   }
 
   return (
@@ -372,8 +374,8 @@ export default function Admin() {
       <CountdownBanner />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
-          <p className="text-gray-500 mt-1">Gestioná resultados, usuarios y reportes.</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('admin.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('admin.subtitle')}</p>
         </div>
         
         <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
@@ -382,28 +384,28 @@ export default function Admin() {
             onClick={() => setActiveTab('results')}
             className={activeTab === 'results' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Resultados
+            {t('admin.tabs.results')}
           </Button>
           <Button 
             variant={activeTab === 'users' ? 'default' : 'outline'} 
             onClick={() => setActiveTab('users')}
             className={activeTab === 'users' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Usuarios
+            {t('admin.tabs.users')}
           </Button>
           <Button 
             variant={activeTab === 'reports' ? 'default' : 'outline'} 
             onClick={() => setActiveTab('reports')}
             className={activeTab === 'reports' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Reportes
+            {t('admin.tabs.reports')}
           </Button>
           <Button 
             variant={activeTab === 'analytics' ? 'default' : 'outline'} 
             onClick={() => setActiveTab('analytics')}
             className={activeTab === 'analytics' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Estadísticas
+            {t('admin.tabs.analytics')}
           </Button>
         </div>
       </div>
@@ -418,14 +420,14 @@ export default function Admin() {
       {activeTab === 'analytics' && (
         <div className="space-y-6 pt-4 pb-12">
           <h2 className="text-2xl font-bold text-indigo-700 border-b border-indigo-200 pb-2 flex items-center gap-2">
-            <Calculator className="w-6 h-6" /> Estadísticas del Sitio
+            <Calculator className="w-6 h-6" /> {t('admin.analytics.title')}
           </h2>
-          <p className="text-sm text-gray-600 mb-4">Resumen rápido de la actividad en El Prode de Beno.</p>
+          <p className="text-sm text-gray-600 mb-4">{t('admin.analytics.description')}</p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">Usuarios Registrados</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-500">{t('admin.analytics.totalUsers')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-gray-900">{analytics.totalUsers}</div>
@@ -433,16 +435,16 @@ export default function Admin() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">Usuarios Activos Hoy</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-500">{t('admin.analytics.activeToday')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-blue-600">{analytics.activeToday}</div>
-                <p className="text-xs text-gray-500 mt-1">Iniciaron sesión hoy</p>
+                <p className="text-xs text-gray-500 mt-1">{t('admin.analytics.activeTodayDesc')}</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">Predicciones Guardadas</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-500">{t('admin.analytics.totalPredictions')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-green-600">{analytics.totalPredictions}</div>
@@ -450,21 +452,21 @@ export default function Admin() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">Tasa de Participación</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-500">{t('admin.analytics.participationRate')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-purple-600">
                   {analytics.totalUsers > 0 ? Math.round((analytics.usersWithPredictions / analytics.totalUsers) * 100) : 0}%
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Usuarios con predicciones</p>
+                <p className="text-xs text-gray-500 mt-1">{t('admin.analytics.participationRateDesc')}</p>
               </CardContent>
             </Card>
           </div>
           
           <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg mt-6">
-            <h3 className="font-semibold text-blue-900 mb-2">Analíticas Avanzadas (Vercel)</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">{t('admin.analytics.advancedTitle')}</h3>
             <p className="text-sm text-blue-800 mb-4">
-              Para ver datos de tráfico detallados (visitas por página, tiempo en el sitio, países de origen, etc.), ingresá a tu panel de Vercel.
+              {t('admin.analytics.advancedDesc')}
             </p>
             <a 
               href="https://vercel.com/dashboard" 
@@ -472,7 +474,7 @@ export default function Admin() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-10 px-4 py-2"
             >
-              Abrir Vercel Analytics
+              {t('admin.analytics.advancedBtn')}
             </a>
           </div>
         </div>
@@ -487,14 +489,14 @@ export default function Admin() {
               disabled={saving}
               className="flex-1 md:flex-none flex items-center gap-2"
             >
-              <Save className="w-4 h-4" /> Guardar Resultados
+              <Save className="w-4 h-4" /> {saving ? t('admin.results.savingBtn') : t('admin.results.saveBtn')}
             </Button>
             <Button 
               onClick={() => setConfirmAction({ type: 'calc' })}
               disabled={calculating}
               className="flex-1 md:flex-none flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
             >
-              <Calculator className="w-4 h-4" /> Calcular Puntos
+              <Calculator className="w-4 h-4" /> {calculating ? t('admin.results.calculatingBtn') : t('admin.results.calcBtn')}
             </Button>
             <Button 
               variant="destructive"
@@ -502,13 +504,13 @@ export default function Admin() {
               disabled={calculating}
               className="flex-1 md:flex-none flex items-center gap-2"
             >
-              <AlertCircle className="w-4 h-4" /> Resetear Puntos
+              <AlertCircle className="w-4 h-4" /> {t('admin.results.resetBtn')}
             </Button>
           </div>
 
           <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Resultados Fase de Grupos</h2>
-        <p className="text-sm text-gray-600 mb-4">Seleccioná el orden final real de cada grupo.</p>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t('admin.results.groupStage')}</h2>
+        <p className="text-sm text-gray-600 mb-4">{t('admin.results.groupStageDesc')}</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Object.entries(actualGroups)
@@ -516,7 +518,7 @@ export default function Admin() {
             .map(([groupLetter, teams]) => (
             <Card key={groupLetter} className="overflow-hidden border-t-4 border-t-indigo-600">
               <CardHeader className="bg-gray-50 py-3 px-4 border-b">
-                <CardTitle className="text-lg">Grupo {groupLetter}</CardTitle>
+                <CardTitle className="text-lg">{t('admin.results.group')} {groupLetter}</CardTitle>
               </CardHeader>
               <CardContent className="p-4 space-y-3">
                 {[0, 1, 2, 3].map((index) => (
@@ -533,7 +535,7 @@ export default function Admin() {
                       value={teams[index] || ""}
                       onChange={(e) => handleGroupChange(groupLetter, index, e.target.value)}
                     >
-                      <option value="">Seleccionar equipo...</option>
+                      <option value="">{t('admin.results.selectTeam')}</option>
                       {GROUPS[groupLetter as keyof typeof GROUPS].map(team => (
                         <option key={team} value={team}>{team}</option>
                       ))}
@@ -547,7 +549,7 @@ export default function Admin() {
       </div>
 
       <div className="space-y-6 pt-8 pb-12">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Resultados Preguntas Especiales</h2>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t('admin.results.specialQuestions')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SPECIAL_QUESTIONS.map((q) => (
             <Card key={q.id}>
@@ -558,7 +560,7 @@ export default function Admin() {
                 <input
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  placeholder="Respuesta oficial..."
+                  placeholder={t('admin.results.officialAnswer')}
                   value={actualSpecials[q.id] || ""}
                   onChange={(e) => handleSpecialChange(q.id, e.target.value)}
                 />
@@ -569,10 +571,10 @@ export default function Admin() {
       </div>
 
       <div className="space-y-6 pt-8 pb-12 border-t border-gray-200 opacity-50">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Resultados Fase Eliminatoria</h2>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t('admin.results.knockoutStage')}</h2>
         <div className="bg-gray-100 p-8 rounded-lg text-center border-2 border-dashed border-gray-300">
-          <p className="text-gray-600 font-medium">Cuadro por definir</p>
-          <p className="text-sm text-gray-500 mt-2">Esta sección se habilitará una vez finalizada la fase de grupos.</p>
+          <p className="text-gray-600 font-medium">{t('admin.results.tbd')}</p>
+          <p className="text-sm text-gray-500 mt-2">{t('admin.results.tbdDesc')}</p>
         </div>
       </div>
       </>
@@ -581,9 +583,9 @@ export default function Admin() {
       {activeTab === 'users' && (
       <div className="space-y-6 pt-4 pb-12">
         <h2 className="text-2xl font-bold text-red-700 border-b border-red-200 pb-2 flex items-center gap-2">
-          <Users className="w-6 h-6" /> Gestión de Usuarios
+          <Users className="w-6 h-6" /> {t('admin.users.title')}
         </h2>
-        <p className="text-sm text-gray-600 mb-4">Administrá los participantes del Prode. Podés eliminar cuentas si alguien se arrepiente de jugar.</p>
+        <p className="text-sm text-gray-600 mb-4">{t('admin.users.description')}</p>
         
         <Card>
           <CardContent className="p-0">
@@ -591,11 +593,11 @@ export default function Admin() {
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
                   <tr>
-                    <th className="px-6 py-3">Usuario</th>
-                    <th className="px-6 py-3">Email</th>
-                    <th className="px-6 py-3">Rol</th>
-                    <th className="px-6 py-3">Puntos</th>
-                    <th className="px-6 py-3 text-right">Acciones</th>
+                    <th className="px-6 py-3">{t('admin.users.table.name')}</th>
+                    <th className="px-6 py-3">{t('admin.users.table.email')}</th>
+                    <th className="px-6 py-3">{t('admin.users.table.role')}</th>
+                    <th className="px-6 py-3">{t('admin.users.table.points')}</th>
+                    <th className="px-6 py-3 text-right">{t('admin.users.table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -625,9 +627,9 @@ export default function Admin() {
                             size="sm"
                             onClick={() => unfixPredictions(u.uid, u.displayName)}
                             className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50"
-                            title="Permitir al usuario volver a editar sus predicciones"
+                            title={t('admin.users.unfixTooltip')}
                           >
-                            <Unlock className="w-4 h-4" /> Desfijar
+                            <Unlock className="w-4 h-4" /> {t('admin.users.unfixBtn')}
                           </Button>
                         )}
                         <Button 
@@ -637,7 +639,7 @@ export default function Admin() {
                           disabled={u.role === 'admin'} // Prevent deleting other admins or self easily
                           className="flex items-center gap-1"
                         >
-                          <Trash2 className="w-4 h-4" /> Eliminar
+                          <Trash2 className="w-4 h-4" /> {t('admin.users.deleteBtn')}
                         </Button>
                       </td>
                     </tr>
@@ -645,7 +647,7 @@ export default function Admin() {
                   {users.length === 0 && (
                     <tr>
                       <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                        No hay usuarios registrados.
+                        {t('admin.users.noUsers')}
                       </td>
                     </tr>
                   )}
@@ -660,22 +662,22 @@ export default function Admin() {
       {activeTab === 'reports' && (
       <div className="space-y-6 pt-4 pb-12">
         <h2 className="text-2xl font-bold text-orange-700 border-b border-orange-200 pb-2 flex items-center gap-2">
-          <MessageSquareWarning className="w-6 h-6" /> Reportes y Sugerencias
+          <MessageSquareWarning className="w-6 h-6" /> {t('admin.reports.title')}
         </h2>
-        <p className="text-sm text-gray-600 mb-4">Revisá los reportes enviados por los usuarios. Podés ver los archivos adjuntos haciendo clic en los enlaces.</p>
+        <p className="text-sm text-gray-600 mb-4">{t('admin.reports.description')}</p>
         
         <div className="space-y-4">
           {reports.length === 0 ? (
             <div className="bg-gray-50 p-8 rounded-lg text-center border border-gray-200">
-              <p className="text-gray-500">No hay reportes nuevos.</p>
+              <p className="text-gray-500">{t('admin.reports.noReports')}</p>
             </div>
           ) : (
             reports.map((report) => (
               <Card key={report.id} className="overflow-hidden border-l-4 border-l-orange-500">
                 <CardHeader className="bg-gray-50 py-3 px-4 border-b flex flex-row justify-between items-start">
                   <div>
-                    <CardTitle className="text-base font-bold text-gray-900">{report.userName || "Usuario Anónimo"}</CardTitle>
-                    <p className="text-xs text-gray-500">{report.userEmail || "Sin email"} • {new Date(report.createdAt).toLocaleString()}</p>
+                    <CardTitle className="text-base font-bold text-gray-900">{report.userName || t('admin.reports.anonymous')}</CardTitle>
+                    <p className="text-xs text-gray-500">{report.userEmail || t('admin.reports.noEmail')} • {new Date(report.createdAt).toLocaleString()}</p>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -694,7 +696,7 @@ export default function Admin() {
                   {report.attachments && report.attachments.length > 0 && (
                     <div className="pt-3 border-t border-gray-100">
                       <p className="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1">
-                        <Paperclip className="w-3 h-3" /> Archivos adjuntos ({report.attachments.length})
+                        <Paperclip className="w-3 h-3" /> {t('admin.reports.attachmentsCount', { count: report.attachments.length })}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {report.attachments.map((url, i) => (
@@ -723,19 +725,19 @@ export default function Admin() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              {confirmAction.type === 'calc' ? '¿Recalcular puntos?' : 
-               confirmAction.type === 'reset' ? '¿Resetear todos los puntos a 0?' : 
-               '¿Eliminar usuario?'}
+              {confirmAction.type === 'calc' ? t('admin.modals.calc.title') : 
+               confirmAction.type === 'reset' ? t('admin.modals.reset.title') : 
+               t('admin.modals.deleteUser.title')}
             </h3>
             <p className="text-gray-600 mb-6">
               {confirmAction.type === 'calc' 
-                ? 'Esto va a recalcular los puntos de todos los usuarios basándose en los resultados oficiales guardados. Puede tomar unos segundos.' 
+                ? t('admin.modals.calc.desc') 
                 : confirmAction.type === 'reset'
-                ? 'Esto va a poner los puntos de TODOS los usuarios en 0. Usá esta opción solo si estás probando o antes de que comience el torneo real. No se puede deshacer.'
-                : `¿Estás seguro de eliminar al usuario ${confirmAction.name}? Esta acción va a borrar su perfil y todas sus predicciones. No se puede deshacer.`}
+                ? t('admin.modals.reset.desc')
+                : t('admin.modals.deleteUser.desc', { name: confirmAction.name })}
             </p>
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setConfirmAction(null)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setConfirmAction(null)}>{t('admin.modals.cancel')}</Button>
               <Button 
                 variant={confirmAction.type === 'delete' || confirmAction.type === 'reset' ? 'destructive' : 'default'}
                 className={confirmAction.type === 'calc' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : ''}
@@ -750,9 +752,9 @@ export default function Admin() {
                   setConfirmAction(null); 
                 }}
               >
-                {confirmAction.type === 'calc' ? 'Sí, recalcular' : 
-                 confirmAction.type === 'reset' ? 'Sí, resetear a 0' : 
-                 'Sí, eliminar'}
+                {confirmAction.type === 'calc' ? t('admin.modals.calc.confirm') : 
+                 confirmAction.type === 'reset' ? t('admin.modals.reset.confirm') : 
+                 t('admin.modals.deleteUser.confirm')}
               </Button>
             </div>
           </div>

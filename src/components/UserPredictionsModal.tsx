@@ -5,6 +5,7 @@ import { GROUPS, SPECIAL_QUESTIONS } from "../data";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { X, Lock, Unlock, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "./ui/button";
+import { useTranslation } from 'react-i18next';
 
 interface UserPredictionsModalProps {
   userId: string;
@@ -13,6 +14,7 @@ interface UserPredictionsModalProps {
 }
 
 export function UserPredictionsModal({ userId, userName, onClose }: UserPredictionsModalProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [predictions, setPredictions] = useState<any>(null);
   const [results, setResults] = useState<any>(null);
@@ -45,7 +47,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
         <div className="bg-white rounded-lg p-6 max-w-4xl w-full shadow-xl max-h-[90vh] overflow-y-auto">
-          <div className="text-center py-10">Cargando predicciones de {userName}...</div>
+          <div className="text-center py-10">{t('userPredictions.loading', { userName })}</div>
         </div>
       </div>
     );
@@ -56,12 +58,12 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
         <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold text-gray-900">Predicciones de {userName}</h3>
+            <h3 className="text-xl font-bold text-gray-900">{t('userPredictions.title', { userName })}</h3>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700"><X className="w-5 h-5" /></button>
           </div>
-          <p className="text-gray-600 py-4 text-center">Este usuario aún no ha guardado ninguna predicción.</p>
+          <p className="text-gray-600 py-4 text-center">{t('userPredictions.noPredictions')}</p>
           <div className="flex justify-end mt-4">
-            <Button onClick={onClose}>Cerrar</Button>
+            <Button onClick={onClose}>{t('userPredictions.close')}</Button>
           </div>
         </div>
       </div>
@@ -114,15 +116,15 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
       <div className="bg-white rounded-lg max-w-4xl w-full shadow-xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="flex justify-between items-center p-6 border-b shrink-0 bg-white z-10 sticky top-0">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">Predicciones de {userName}</h3>
+            <h3 className="text-2xl font-bold text-gray-900">{t('userPredictions.title', { userName })}</h3>
             <div className="flex items-center gap-2 mt-1">
               {isLocked ? (
                 <span className="flex items-center gap-1 text-sm text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-200">
-                  <Lock className="w-3 h-3" /> Fijadas
+                  <Lock className="w-3 h-3" /> {t('userPredictions.locked')}
                 </span>
               ) : (
                 <span className="flex items-center gap-1 text-sm text-blue-700 bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
-                  <Unlock className="w-3 h-3" /> Borrador
+                  <Unlock className="w-3 h-3" /> {t('userPredictions.draft')}
                 </span>
               )}
             </div>
@@ -132,7 +134,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
 
         <div className="p-6 overflow-y-auto space-y-8">
           <div>
-            <h4 className="text-xl font-bold text-blue-900 mb-4">Fase de Grupos</h4>
+            <h4 className="text-xl font-bold text-blue-900 mb-4">{t('userPredictions.groupStage')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(groups)
                 .sort(([a], [b]) => a.localeCompare(b))
@@ -142,7 +144,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                 return (
                   <Card key={groupLetter} className="overflow-hidden border-t-4 border-t-blue-600">
                     <CardHeader className="bg-gray-50 py-2 px-4 border-b flex flex-row justify-between items-center">
-                      <CardTitle className="text-md">Grupo {groupLetter}</CardTitle>
+                      <CardTitle className="text-md">{t('userPredictions.group')} {groupLetter}</CardTitle>
                       {groupStatus && (
                         <span className={`text-sm font-bold ${groupStatus.totalPoints > 0 ? 'text-green-600' : 'text-gray-500'}`}>
                           +{groupStatus.totalPoints} pts
@@ -165,7 +167,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                               icon = (
                                 <>
                                   <span className="text-sm font-bold text-green-600">+1 pt</span>
-                                  <CheckCircle2 className="w-4 h-4 text-green-600" title="Posición exacta" />
+                                  <CheckCircle2 className="w-4 h-4 text-green-600" title={t('userPredictions.exactPosition')} />
                                 </>
                               );
                             } else {
@@ -174,7 +176,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                               icon = (
                                 <>
                                   <span className="text-sm font-bold text-red-500">+0 pts</span>
-                                  <XCircle className="w-4 h-4 text-red-500" title="Posición incorrecta" />
+                                  <XCircle className="w-4 h-4 text-red-500" title={t('userPredictions.incorrectPosition')} />
                                 </>
                               );
                             }
@@ -199,7 +201,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                       </ul>
                       {groupStatus && groupStatus.isPerfect && (
                          <div className="bg-green-100 p-2 text-center text-sm font-bold text-green-800 border-t border-green-200">
-                           ¡Grupo Perfecto! (+2 pts)
+                           {t('userPredictions.perfectGroup')}
                          </div>
                       )}
                     </CardContent>
@@ -210,10 +212,10 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
           </div>
 
           <div>
-            <h4 className="text-xl font-bold text-blue-900 mb-4">Preguntas Especiales</h4>
+            <h4 className="text-xl font-bold text-blue-900 mb-4">{t('userPredictions.specialQuestions')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {SPECIAL_QUESTIONS.map((q) => {
-                const answer = specials[q.id] || "Sin respuesta";
+                const answer = specials[q.id] || t('userPredictions.noAnswer');
                 const status = getSpecialStatus(q.id, answer);
                 let bgColor = "bg-gray-50";
                 let borderColor = "border-gray-200";

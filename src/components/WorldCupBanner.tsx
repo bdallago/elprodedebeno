@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const WORLD_CUP_START = new Date('2026-06-11T00:00:00').getTime();
 
 export function WorldCupBanner() {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState(WORLD_CUP_START - Date.now());
 
   useEffect(() => {
@@ -16,12 +18,12 @@ export function WorldCupBanner() {
   const isTimeUp = timeLeft <= 0;
 
   const formatTime = (ms: number) => {
-    if (ms <= 0) return "00 Días 00h 00m 00s";
+    if (ms <= 0) return `00 ${t('worldCupBanner.days')} 00h 00m 00s`;
     const days = Math.floor(ms / (1000 * 60 * 60 * 24));
     const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((ms % (1000 * 60)) / 1000);
-    return `${days} Días ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+    return `${days} ${t('worldCupBanner.days')} ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
   };
 
   if (isTimeUp) {
@@ -33,8 +35,8 @@ export function WorldCupBanner() {
       <div className="flex items-center gap-3">
         <Trophy className="w-6 h-6 text-indigo-300" />
         <div>
-          <h3 className="font-bold text-lg">Tiempo restante para el Mundial</h3>
-          <p className="text-indigo-200 text-sm">El 11 de Junio de 2026 comienza la Copa del Mundo.</p>
+          <h3 className="font-bold text-lg">{t('worldCupBanner.timeLeft')}</h3>
+          <p className="text-indigo-200 text-sm">{t('worldCupBanner.startDate')}</p>
         </div>
       </div>
       <div className="text-2xl font-mono font-bold bg-indigo-950 px-4 py-2 rounded-md border border-indigo-800 text-center">

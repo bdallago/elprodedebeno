@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
 import { GROUPS } from "../data";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { useTranslation } from "react-i18next";
 
 const TEAM_CODES: Record<string, string> = {
   "México": "mx", "Sudáfrica": "za", "Corea del Sur": "kr", "República Checa": "cz",
@@ -81,6 +82,7 @@ const TeamFlag = ({ teamName }: { teamName: string }) => {
 };
 
 export function Fixture() {
+  const { t } = useTranslation();
   const [currentFecha, setCurrentFecha] = useState(0);
   const [actualGroups, setActualGroups] = useState<Record<string, string[]>>(GROUPS);
 
@@ -143,12 +145,12 @@ export function Fixture() {
         <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-slate-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-4 text-center">
-            <h2 className="text-lg font-bold tracking-wider mb-4 text-white">FIXTURE MUNDIAL</h2>
+            <h2 className="text-lg font-bold tracking-wider mb-4 text-white">{t('fixture.title')}</h2>
             <div className="flex items-center justify-between px-4">
               <button onClick={handlePrev} className="p-1 hover:bg-white/20 rounded-full transition-colors">
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <span className="font-bold text-base">FECHA {currentFecha + 1}</span>
+              <span className="font-bold text-base">{t('fixture.matchday', { number: currentFecha + 1 })}</span>
               <button onClick={handleNext} className="p-1 hover:bg-white/20 rounded-full transition-colors">
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -187,9 +189,9 @@ export function Fixture() {
         <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-slate-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-4 text-center">
-            <h2 className="text-lg font-bold tracking-wider mb-4 text-white">FASE DE GRUPOS</h2>
+            <h2 className="text-lg font-bold tracking-wider mb-4 text-white">{t('fixture.standingsTitle')}</h2>
             <div className="flex items-center justify-center px-4 h-7">
-              <span className="font-bold text-base">POSICIONES</span>
+              <span className="font-bold text-base">{t('fixture.standingsSubtitle')}</span>
             </div>
           </div>
 
@@ -200,21 +202,21 @@ export function Fixture() {
               .map(([groupLetter, teams]) => (
               <div key={groupLetter} className="border-b border-slate-200 last:border-b-0">
                 <div className="bg-slate-800 text-white text-left py-2 px-3 text-sm font-bold tracking-wide flex justify-between">
-                  <span>GRUPO {groupLetter}</span>
+                  <span>{t('fixture.group', { letter: groupLetter })}</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs sm:text-sm text-left table-fixed">
                     <thead className="text-[10px] sm:text-xs text-slate-500 bg-slate-50 border-b border-slate-200 uppercase">
                       <tr>
                         <th className="w-8 sm:w-10 py-2 text-center">#</th>
-                        <th className="py-2 text-left">Equipos</th>
-                        <th className="w-8 sm:w-10 py-2 text-center font-bold text-slate-700">PTS</th>
-                        <th className="w-6 sm:w-8 py-2 text-center">J</th>
-                        <th className="w-8 sm:w-10 py-2 text-center">Gol</th>
-                        <th className="w-8 sm:w-10 py-2 text-center">+/-</th>
-                        <th className="w-6 sm:w-8 py-2 text-center">G</th>
-                        <th className="w-6 sm:w-8 py-2 text-center">E</th>
-                        <th className="w-6 sm:w-8 py-2 text-center">P</th>
+                        <th className="py-2 text-left">{t('fixture.table.teams')}</th>
+                        <th className="w-8 sm:w-10 py-2 text-center font-bold text-slate-700">{t('fixture.table.pts')}</th>
+                        <th className="w-6 sm:w-8 py-2 text-center">{t('fixture.table.played')}</th>
+                        <th className="w-8 sm:w-10 py-2 text-center">{t('fixture.table.goals')}</th>
+                        <th className="w-8 sm:w-10 py-2 text-center">{t('fixture.table.diff')}</th>
+                        <th className="w-6 sm:w-8 py-2 text-center">{t('fixture.table.won')}</th>
+                        <th className="w-6 sm:w-8 py-2 text-center">{t('fixture.table.drawn')}</th>
+                        <th className="w-6 sm:w-8 py-2 text-center">{t('fixture.table.lost')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">

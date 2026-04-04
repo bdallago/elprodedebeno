@@ -4,7 +4,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
+import i18n from './i18n';
 
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
@@ -87,7 +87,7 @@ export default function App() {
   }, []);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+    return <div className="min-h-screen flex items-center justify-center">{i18n.t('loading')}</div>;
   }
 
   return (
@@ -133,13 +133,13 @@ export default function App() {
                       El Prode de Beno
                     </p>
                     <p className="text-blue-200 text-sm">
-                      desarrollado por <span className="text-white font-bold">@imbenodl</span>
+                      {i18n.t('footer.developedBy')} <span className="text-white font-bold">@imbenodl</span>
                     </p>
                   </div>
                 </a>
                 <div className="flex gap-6 text-sm text-blue-200">
-                  <Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidad</Link>
-                  <Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link>
+                  <Link to="/privacy" className="hover:text-white transition-colors">{i18n.t('footer.privacy')}</Link>
+                  <Link to="/terms" className="hover:text-white transition-colors">{i18n.t('footer.terms')}</Link>
                 </div>
               </div>
             </div>
@@ -147,7 +147,6 @@ export default function App() {
         )}
       </div>
       <Analytics />
-      <SpeedInsights />
     </BrowserRouter>
   );
 }

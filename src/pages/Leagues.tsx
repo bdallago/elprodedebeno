@@ -8,6 +8,7 @@ import { Trophy, User as UserIcon, Plus, LogIn, LogOut, Share2, Users, Trash2, C
 import { Button } from "../components/ui/button";
 import { CountdownBanner } from "../components/CountdownBanner";
 import { UserPredictionsModal } from "../components/UserPredictionsModal";
+import { useTranslation } from 'react-i18next';
 
 interface Player {
   uid: string;
@@ -44,6 +45,7 @@ export default function Leagues({ user }: { user: User }) {
   const [pendingInvitation, setPendingInvitation] = useState<{league: League, inviter: string} | null>(null);
   const [selectedUser, setSelectedUser] = useState<{uid: string, name: string} | null>(null);
   const location = useLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const q = query(collection(db, "users"), orderBy("totalPoints", "desc"));
@@ -62,13 +64,13 @@ export default function Leagues({ user }: { user: User }) {
       
       // Handle auto-join via URL or Hash
       let leagueId = new URLSearchParams(window.location.search).get('league');
-      let inviter = new URLSearchParams(window.location.search).get('inviter') || 'Un jugador';
+      let inviter = new URLSearchParams(window.location.search).get('inviter') || t('leagues.aPlayer');
       
       if (!leagueId && window.location.hash) {
         const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
         leagueId = hashParams.get('league');
         if (hashParams.has('inviter')) {
-          inviter = hashParams.get('inviter') || 'Un jugador';
+          inviter = hashParams.get('inviter') || t('leagues.aPlayer');
         }
       }
 
@@ -98,7 +100,7 @@ export default function Leagues({ user }: { user: User }) {
     const nameExists = leagues.some(l => l.name.toLowerCase() === normalizedName);
     
     if (nameExists) {
-      setLeagueError("Ya existe un torneo con este nombre. Por favor, elige otro.");
+      setLeagueError(t('leagues.nameExistsError'));
       return;
     }
 
@@ -173,11 +175,11 @@ export default function Leagues({ user }: { user: User }) {
     const origin = "https://prode-mundial-549241234562.us-west1.run.app";
     
     // 2. Preparamos el nombre y armamos la URL correcta con el #
-    const inviterName = encodeURIComponent(user.displayName || 'Un jugador');
+    const inviterName = encodeURIComponent(user.displayName || t('leagues.aPlayer'));
     const url = `${origin}/#league=${league.id}&inviter=${inviterName}`;
     
     // 3. Copiamos al portapapeles
-    navigator.clipboard.writeText(`¡Únete a mi torneo "${league.name}" en el Prode Mundial 2026! ${url}`);
+    navigator.clipboard.writeText(t('leagues.inviteMessage', { name: league.name, url }));
     
     // 4. Mostramos el tilde de éxito
     setCopiedLeagueId(league.id);
@@ -207,7 +209,7 @@ export default function Leagues({ user }: { user: User }) {
   const isAdmin = currentUser?.role === 'admin';
 
   if (loading) {
-    return <div className="text-center py-10">Cargando torneos...</div>;
+    return <div className="text-center py-10">{t('leagues.loading')}</div>;
   }
 
   const renderLeaderboard = (title: string, playersList: Player[]) => (
@@ -248,21 +250,21 @@ export default function Leagues({ user }: { user: User }) {
                   <div>
                     <p className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">
                       {player.displayName}
-                      {player.uid === user.uid && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Tú</span>}
+                      {player.uid === user.uid && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{t('leagues.you')}</span>}
                     </p>
                   </div>
                 </div>
               </div>
               
               <div className="text-xl font-bold text-gray-900">
-                {player.totalPoints} <span className="text-sm font-normal text-gray-500">pts</span>
+                {player.totalPoints} <span className="text-sm font-normal text-gray-500">{t('leagues.pts')}</span>
               </div>
             </div>
           )})}
           
           {playersList.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              Aún no hay participantes en este ranking.
+              {t('leagues.noParticipants')}
             </div>
           )}
         </div>
@@ -280,11 +282,11 @@ export default function Leagues({ user }: { user: User }) {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-center sm:text-left w-full sm:w-auto">
-            <h2 className="text-3xl font-bold text-gray-900">Torneos</h2>
-            <p className="text-sm text-gray-500 mt-1 text-justify sm:text-left">Creá o unite a torneos para competir con tus amigos o con toda la comunidad.</p>
+            <h2 className="text-3xl font-bold text-gray-900">{t('leagues.title')}</h2>
+            <p className="text-sm text-gray-500 mt-1 text-justify sm:text-left">{t('leagues.description')}</p>
           </div>
           <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto shrink-0">
-            <Plus className="w-4 h-4 mr-2"/> Crear Torneo
+            <Plus className="w-4 h-4 mr-2"/> {t('leagues.createLeague')}
           </Button>
         </div>
 
@@ -298,19 +300,19 @@ export default function Leagues({ user }: { user: User }) {
                     <div className="flex items-center gap-2">
                       {league.name}
                       {league.isPublic ? (
-                        <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-normal" title="Cualquiera puede unirse">
-                          <Globe className="w-3 h-3" /> Público
+                        <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-normal" title={t('leagues.anyoneCanJoin')}>
+                          <Globe className="w-3 h-3" /> {t('leagues.public')}
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-normal" title="Solo con invitación">
-                          <Lock className="w-3 h-3" /> Privado
+                        <span className="flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-normal" title={t('leagues.inviteOnly')}>
+                          <Lock className="w-3 h-3" /> {t('leagues.private')}
                         </span>
                       )}
                       {isAdmin && (
                         <button 
                           onClick={() => setLeagueToDelete(league)} 
                           className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
-                          title="Eliminar torneo"
+                          title={t('leagues.deleteLeague')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -325,27 +327,27 @@ export default function Leagues({ user }: { user: User }) {
                   {isMember ? (
                     <>
                       <Button variant={selectedLeague?.id === league.id ? "default" : "outline"} size="sm" onClick={() => setSelectedLeague(league)}>
-                        Ver Ranking
+                        {t('leagues.viewRanking')}
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => inviteToLeague(league)}>
                         {copiedLeagueId === league.id ? (
-                          <><Check className="w-4 h-4 mr-2 text-green-600"/> <span className="text-green-600">¡Copiado!</span></>
+                          <><Check className="w-4 h-4 mr-2 text-green-600"/> <span className="text-green-600">{t('leagues.copied')}</span></>
                         ) : (
-                          <><Share2 className="w-4 h-4 mr-2"/> Invitar</>
+                          <><Share2 className="w-4 h-4 mr-2"/> {t('leagues.invite')}</>
                         )}
                       </Button>
                       <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-auto" onClick={() => setLeagueToLeave(league)}>
-                        <LogOut className="w-4 h-4 mr-2"/> Salir
+                        <LogOut className="w-4 h-4 mr-2"/> {t('leagues.leave')}
                       </Button>
                     </>
                   ) : (
                     league.isPublic ? (
                       <Button size="sm" onClick={() => joinLeague(league.id)} className="w-full">
-                        <LogIn className="w-4 h-4 mr-2"/> Unirse al Torneo
+                        <LogIn className="w-4 h-4 mr-2"/> {t('leagues.joinLeague')}
                       </Button>
                     ) : (
                       <Button size="sm" disabled className="w-full bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed">
-                        <Lock className="w-4 h-4 mr-2"/> Requiere Invitación
+                        <Lock className="w-4 h-4 mr-2"/> {t('leagues.requiresInvite')}
                       </Button>
                     )
                   )}
@@ -355,7 +357,7 @@ export default function Leagues({ user }: { user: User }) {
           })}
           {visibleLeagues.length === 0 && (
             <div className="col-span-full text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
-              No hay torneos creados aún. ¡Creá el primero!
+              {t('leagues.noLeagues')}
             </div>
           )}
         </div>
@@ -363,7 +365,7 @@ export default function Leagues({ user }: { user: User }) {
         {selectedLeague && (
           <div className="mt-8">
             {renderLeaderboard(
-              `Ranking: ${selectedLeague.name}`, 
+              `${t('leagues.ranking')}: ${selectedLeague.name}`, 
               players.filter(p => selectedLeague.members.includes(p.uid))
             )}
           </div>
@@ -375,13 +377,13 @@ export default function Leagues({ user }: { user: User }) {
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
             {!isConfirmingCreate ? (
               <>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Crear Nuevo Torneo</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{t('leagues.createNewLeague')}</h3>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Torneo</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('leagues.leagueName')}</label>
                   <input
                     type="text"
                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Ej: Los Pibes del Barrio"
+                    placeholder={t('leagues.leagueNamePlaceholder')}
                     value={newLeagueName}
                     onChange={(e) => { setNewLeagueName(e.target.value); setLeagueError(""); }}
                     autoFocus
@@ -390,7 +392,7 @@ export default function Leagues({ user }: { user: User }) {
                 </div>
                 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Privacidad del Torneo</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('leagues.privacy')}</label>
                   <div className="grid grid-cols-2 gap-3">
                     <div 
                       className={`border rounded-lg p-3 cursor-pointer transition-colors ${!isPublic ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-gray-200 hover:bg-gray-50'}`}
@@ -398,9 +400,9 @@ export default function Leagues({ user }: { user: User }) {
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Lock className={`w-4 h-4 ${!isPublic ? 'text-blue-600' : 'text-gray-500'}`} />
-                        <span className={`font-medium ${!isPublic ? 'text-blue-900' : 'text-gray-700'}`}>Privado</span>
+                        <span className={`font-medium ${!isPublic ? 'text-blue-900' : 'text-gray-700'}`}>{t('leagues.private')}</span>
                       </div>
-                      <p className="text-xs text-gray-500">Solo van a poder unirse quienes tengan el enlace de invitación.</p>
+                      <p className="text-xs text-gray-500">{t('leagues.privateDesc')}</p>
                     </div>
                     <div 
                       className={`border rounded-lg p-3 cursor-pointer transition-colors ${isPublic ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-gray-200 hover:bg-gray-50'}`}
@@ -408,42 +410,39 @@ export default function Leagues({ user }: { user: User }) {
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Globe className={`w-4 h-4 ${isPublic ? 'text-blue-600' : 'text-gray-500'}`} />
-                        <span className={`font-medium ${isPublic ? 'text-blue-900' : 'text-gray-700'}`}>Público</span>
+                        <span className={`font-medium ${isPublic ? 'text-blue-900' : 'text-gray-700'}`}>{t('leagues.public')}</span>
                       </div>
-                      <p className="text-xs text-gray-500">Cualquiera va a poder ver el torneo y unirse libremente.</p>
+                      <p className="text-xs text-gray-500">{t('leagues.publicDesc')}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => { setShowCreateModal(false); setLeagueError(""); }}>Cancelar</Button>
+                  <Button variant="outline" onClick={() => { setShowCreateModal(false); setLeagueError(""); }}>{t('leagues.cancel')}</Button>
                   <Button 
                     className="bg-blue-600 hover:bg-blue-700 text-white" 
                     onClick={handleCreateClick}
                     disabled={!newLeagueName.trim()}
                   >
-                    Continuar
+                    {t('leagues.continue')}
                   </Button>
                 </div>
               </>
             ) : (
               <>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Confirmar Torneo</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{t('leagues.confirmLeague')}</h3>
                 <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6">
-                  <p className="text-blue-800 font-medium mb-2">Atención:</p>
-                  <p className="text-blue-700 text-sm">
-                    Estás a punto de crear el torneo <strong>"{newLeagueName.trim()}"</strong> de forma <strong>{isPublic ? 'Pública' : 'Privada'}</strong>. 
-                    Una vez creado, <strong>no vas a poder modificar su nombre ni eliminarlo</strong>. Solo los administradores tienen permiso para borrar torneos.
-                  </p>
+                  <p className="text-blue-800 font-medium mb-2">{t('leagues.attention')}</p>
+                  <p className="text-blue-700 text-sm" dangerouslySetInnerHTML={{ __html: t('leagues.confirmCreateDesc', { name: newLeagueName.trim(), privacy: isPublic ? t('leagues.public') : t('leagues.private') }) }} />
                 </div>
                 <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => setIsConfirmingCreate(false)}>Atrás</Button>
+                  <Button variant="outline" onClick={() => setIsConfirmingCreate(false)}>{t('leagues.back')}</Button>
                   <Button 
                     className="bg-blue-600 hover:bg-blue-700 text-white" 
                     onClick={confirmCreateLeague}
                     disabled={isCreating}
                   >
-                    {isCreating ? "Creando..." : "Confirmar y Crear"}
+                    {isCreating ? t('leagues.creating') : t('leagues.confirmAndCreate')}
                   </Button>
                 </div>
               </>
@@ -455,17 +454,17 @@ export default function Leagues({ user }: { user: User }) {
       {leagueToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">¿Eliminar torneo?</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('leagues.deleteLeagueTitle')}</h3>
             <p className="text-gray-600 mb-6">
-              ¿Estás seguro de que querés eliminar el torneo "{leagueToDelete.name}"? Esta acción no se puede deshacer y todos los miembros van a ser removidos.
+              {t('leagues.deleteLeagueDesc', { name: leagueToDelete.name })}
             </p>
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setLeagueToDelete(null)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setLeagueToDelete(null)}>{t('leagues.cancel')}</Button>
               <Button 
                 variant="destructive"
                 onClick={() => deleteLeague(leagueToDelete.id)}
               >
-                Sí, eliminar
+                {t('leagues.yesDelete')}
               </Button>
             </div>
           </div>
@@ -475,27 +474,24 @@ export default function Leagues({ user }: { user: User }) {
       {leagueToLeave && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">¿Salir del torneo?</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('leagues.leaveLeagueTitle')}</h3>
             {leagueToLeave.members.length === 1 ? (
               <div className="bg-red-50 border border-red-200 p-4 rounded-md mb-6">
-                <p className="text-red-800 font-medium mb-2">¡Atención!</p>
-                <p className="text-red-700 text-sm">
-                  Sos la <strong>última persona</strong> en el torneo "{leagueToLeave.name}". 
-                  Si salís ahora, <strong>el torneo se va a eliminar permanentemente</strong>. ¿Estás absolutamente seguro?
-                </p>
+                <p className="text-red-800 font-medium mb-2">{t('leagues.attention')}</p>
+                <p className="text-red-700 text-sm" dangerouslySetInnerHTML={{ __html: t('leagues.leaveLeagueLastMember', { name: leagueToLeave.name }) }} />
               </div>
             ) : (
               <p className="text-gray-600 mb-6">
-                ¿Estás seguro de que querés salir del torneo "{leagueToLeave.name}"? Vas a poder volver a unirte más tarde si lo deseás.
+                {t('leagues.leaveLeagueDesc', { name: leagueToLeave.name })}
               </p>
             )}
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setLeagueToLeave(null)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setLeagueToLeave(null)}>{t('leagues.cancel')}</Button>
               <Button 
                 variant="destructive"
                 onClick={() => leaveLeague(leagueToLeave.id)}
               >
-                {leagueToLeave.members.length === 1 ? "Sí, salir y eliminar" : "Sí, salir"}
+                {leagueToLeave.members.length === 1 ? t('leagues.yesLeaveAndDelete') : t('leagues.yesLeave')}
               </Button>
             </div>
           </div>
@@ -510,17 +506,15 @@ export default function Leagues({ user }: { user: User }) {
                 <Trophy className="h-10 w-10 text-blue-600" />
               </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">¡Invitación a Torneo!</h3>
-            <p className="text-gray-600 mb-6 text-lg">
-              <strong>{pendingInvitation.inviter}</strong> te está invitando a su torneo <strong>"{pendingInvitation.league.name}"</strong> en El Prode de Beno, ¡sumate!
-            </p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('leagues.invitationTitle')}</h3>
+            <p className="text-gray-600 mb-6 text-lg" dangerouslySetInnerHTML={{ __html: t('leagues.invitationDesc', { inviter: pendingInvitation.inviter, name: pendingInvitation.league.name }) }} />
             <div className="flex justify-center gap-4">
-              <Button variant="outline" className="w-full" onClick={handleRejectInvitation}>Rechazar</Button>
+              <Button variant="outline" className="w-full" onClick={handleRejectInvitation}>{t('leagues.reject')}</Button>
               <Button 
                 className="bg-blue-600 hover:bg-blue-700 text-white w-full"
                 onClick={handleAcceptInvitation}
               >
-                Aceptar y Unirse
+                {t('leagues.acceptAndJoin')}
               </Button>
             </div>
           </div>
