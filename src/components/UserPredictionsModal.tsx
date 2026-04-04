@@ -188,7 +188,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                                 <span className={`font-bold w-5 text-center ${index < 2 ? 'text-blue-600' : 'text-gray-400'}`}>
                                   {index + 1}
                                 </span>
-                                <span className={`font-medium ${textColor}`}>{team}</span>
+                                <span className={`font-medium ${textColor}`}>{t(`teams.${team}`)}</span>
                               </div>
                               {icon && (
                                 <div className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                 return (
                   <Card key={q.id} className={`border ${borderColor} ${bgColor}`}>
                     <CardContent className="p-4">
-                      <p className="text-sm font-semibold text-gray-700 mb-2">{q.label}</p>
+                      <p className="text-sm font-semibold text-gray-700 mb-2">{t(`specialQuestions.${q.id}`)}</p>
                       <div className="flex items-center justify-between bg-white p-2 rounded border">
                         <span className="font-medium text-gray-900">{answer}</span>
                         {status && (

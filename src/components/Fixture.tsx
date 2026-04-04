@@ -67,12 +67,13 @@ const generateFixture = () => {
 const FIXTURE_DATA = generateFixture();
 
 const TeamFlag = ({ teamName }: { teamName: string }) => {
+  const { t } = useTranslation();
   const code = TEAM_CODES[teamName];
   if (code) {
     return (
       <img 
         src={`https://flagcdn.com/w40/${code}.png`} 
-        alt={`Bandera de ${teamName}`}
+        alt={`Bandera de ${t(`teams.${teamName}`)}`}
         className="w-6 h-4 object-cover rounded-sm shadow-sm flex-shrink-0"
         referrerPolicy="no-referrer"
       />
@@ -171,11 +172,11 @@ export function Fixture() {
                         {match.time}
                       </div>
                       <div className="flex-1 grid grid-cols-[1fr_24px_16px_24px_1fr] sm:grid-cols-[1fr_28px_20px_28px_1fr] items-center py-2 sm:py-3 px-2 sm:px-4 gap-1 sm:gap-2">
-                        <div className="text-center font-semibold text-xs sm:text-sm truncate px-1">{match.team1}</div>
+                        <div className="text-center font-semibold text-xs sm:text-sm truncate px-1">{t(`teams.${match.team1}`)}</div>
                         <div className="flex justify-center"><TeamFlag teamName={match.team1} /></div>
                         <div className="text-center text-slate-400 font-bold text-xs sm:text-sm">-</div>
                         <div className="flex justify-center"><TeamFlag teamName={match.team2} /></div>
-                        <div className="text-center font-semibold text-xs sm:text-sm truncate px-1">{match.team2}</div>
+                        <div className="text-center font-semibold text-xs sm:text-sm truncate px-1">{t(`teams.${match.team2}`)}</div>
                       </div>
                     </div>
                   ))}
@@ -230,7 +231,7 @@ export function Fixture() {
                           <td className="py-2 font-medium text-slate-800">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                               <TeamFlag teamName={team} />
-                              <span className="truncate">{team}</span>
+                              <span className="truncate">{t(`teams.${team}`)}</span>
                             </div>
                           </td>
                           <td className="py-2 text-center font-bold text-slate-800">0</td>

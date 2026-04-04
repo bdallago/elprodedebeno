@@ -2,8 +2,10 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const SortableItem: React.FC<{ id: string, team: string, index: number, disabled?: boolean }> = ({ id, team, index, disabled = false }) => {
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -40,7 +42,7 @@ export const SortableItem: React.FC<{ id: string, team: string, index: number, d
       }`}>
         {index + 1}
       </div>
-      <span className="font-medium">{team}</span>
+      <span className="font-medium">{t(`teams.${team}`)}</span>
     </div>
   );
 }

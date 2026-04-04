@@ -537,7 +537,7 @@ export default function Admin() {
                     >
                       <option value="">{t('admin.results.selectTeam')}</option>
                       {GROUPS[groupLetter as keyof typeof GROUPS].map(team => (
-                        <option key={team} value={team}>{team}</option>
+                        <option key={team} value={team}>{t(`teams.${team}`)}</option>
                       ))}
                     </select>
                   </div>
@@ -555,7 +555,7 @@ export default function Admin() {
             <Card key={q.id}>
               <CardContent className="p-5">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {q.label}
+                  {t(`specialQuestions.${q.id}`)}
                 </label>
                 <input
                   type="text"
